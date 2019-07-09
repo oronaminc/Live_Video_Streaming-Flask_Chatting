@@ -16,7 +16,7 @@ Live Video Streaming & Chatting (in vision programming class)
 
 ## Result Live Cam
 <div>
-  <img width="800" src="https://user-images.githubusercontent.com/37185394/60860487-b8eb7480-a251-11e9-8304-d4d75a810495.gif/>
+  <img width="800" src="https://user-images.githubusercontent.com/37185394/60860487-b8eb7480-a251-11e9-8304-d4d75a810495.gif"/>
 </div>
 
 ## Using Manual

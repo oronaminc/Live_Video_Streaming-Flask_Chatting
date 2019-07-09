@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Live Video Streaming</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body class="has-navbar-fixed-bottom" id="chat-scroll">
+
+  <div id="wrapper" style="float:center">
+
+  <div id="live_video" class="container" style="margin-bottom: 50px; float:left; width:60%;">
+    <h1 style="text-align:center">Live Video Streaming</h1>
+    <p><b>Start Date and Time:</b> {{ time }}</p>
+    <p><b>Visitor IP:</b> {{ visitor_ip }}</p>
+    <img src="/video_feed">
+</div>
+
+  <nav class="navbar is-fixed-bottom" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-item is-expanded">
+        <input id="chat_text" class="input" type="text" style="width:80%">
+        <a id="chat_btn" class="button is-info" style="width:15%">
+          Post
+        </a>
+      </div>
+    </div>
+
+  </nav>
+
+  <div id="content" class="container" style="overflow:auto; margin-bottom: 100px; margin-top:100px; width:35%; height:550px">
+
+    {% for message in messages %}
+    <article class="media">
+      <div class="media-content">
+        <div class="content">
+          <p>
+            <strong>{{ message.username }}</strong>
+            <br> {{ message.message }}
+          </p>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+
+
+  <div class="modal is-active">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+
+      <div class="field has-addons">
+        <div class="control is-expanded" style="text-align:center; width:80%; height:50%; letter-spacing: -5px"> 
+          <input id="username_input" class="input" type="text" placeholder="Choose a username" >
+        </div>
+        <div class="control" >
+          <a id="start_chat" class="button is-info">
+            Start Chatting
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+  <script src="https://js.pusher.com/4.4/pusher.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+
+  <script>
+
+  
+  $(document).ready(function()  {
+
+      let username;
+      var divChat = document.getElementById('content');
+
+      $('#start_chat').on('click', function() {
+
+        username = $('#username_input').val();
+        $('.modal').removeClass('is-active');
+
+      });
+
+
+
+      $('#chat_btn').on('click', function() {
+
+        let message = $('#chat_text').val();
+
+        $.post('/message', {'username' : username, 'message' : message}, function() {
+          $('#chat_text').val('');
+        });
+
+  
+
+/*
+        $('#content').animate({
+          scrollTop: divChat.scrollHeight - divChat.clientHeight
+        }, 100);
+*/
+      });
+
+      $('input').keypress(function(e){
+          if(e.keyCode == 13){
+
+            username = $('#username_input').val();
+            $('.modal').removeClass('is-active');
+
+            let message = $('#chat_text').val();
+            if (message==""){
+              message = " => 입장했습니다 <= "
+            }
+
+            $.post('/message', {'username' : username, 'message' : message}, function() {
+              $('#chat_text').val('');
+            });
+
+
+
+          }
+        });
+
+          // Enable pusher logging - don't include this in production
+      Pusher.logToConsole = true;
+
+      var pusher = new Pusher('863815cdc4ae6cb2b486', {
+        cluster: 'ap3',
+        encrypted: true
+      });
+
+      var channel = pusher.subscribe('chat-channel');
+
+      channel.bind('new-message', function(data) {
+
+          let name = data.username;
+          let message = data.message;
+
+          let message_template = `<article class="media">
+                                  <div class="media-content">
+                                    <div class="content">
+                                      <p>
+                                        <strong>${name}</strong>
+                                        <br> ${message}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </article>`;
+                                
+          $('#content').append(message_template);
+
+          $('#content').animate({
+              scrollTop: divChat.scrollHeight - divChat.clientHeight
+            }, 100);
+
+        });
+
+        //$('#content').scrollTop($('#content')[0].scrollHeight);
+
+      
+        //$('#chat-scroll').scrollTop($('#chat-scroll')[0].scrollHeight);
+
+      
+      
+    });
+
+  </script>
+
+</body>
+
+</html>
